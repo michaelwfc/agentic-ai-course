@@ -2,9 +2,11 @@
 import os
 import re
 import json
+from pathlib import Path
+
+
 import base64
 import mimetypes
-from pathlib import Path
 
 # === Third-Party ===
 import pandas as pd
@@ -16,9 +18,11 @@ from anthropic import Anthropic
 from html import escape
 
 # === Env & Clients ===
-load_dotenv()
+# load_dotenv()
 openai_api_key = os.getenv("OPENAI_API_KEY")
 anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
+
+print(os.getenv("OPENAI_API_KEY"))
 
 # Both clients read keys from env by default; explicit is also fine:
 openai_client = OpenAI(api_key=openai_api_key) if openai_api_key else OpenAI()
