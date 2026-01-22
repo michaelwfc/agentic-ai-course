@@ -4,6 +4,15 @@ This module contains all the system prompts, tool descriptions, and instruction
 templates used throughout the deep agents educational framework.
 """
 
+
+
+SYSTEM_PROMPT = """
+You are a helpful arithmetic assistant who is an expert at using a calculator. 
+Return all text as plain text without Markdown math delimiters.
+"""
+
+
+
 WRITE_TODOS_DESCRIPTION = """Create and manage structured task lists for tracking progress through complex workflows.
 
 ## When to Use
@@ -43,6 +52,11 @@ TODO_USAGE_INSTRUCTIONS = """Based upon the user's request:
 IMPORTANT: Always create a research plan of TODOs and conduct research following the above guidelines for ANY user request.
 IMPORTANT: Aim to batch research tasks into a *single TODO* in order to minimize the number of TODOs you have to keep track of.
 """
+
+# Add mock research instructions
+SIMPLE_RESEARCH_INSTRUCTIONS = """IMPORTANT: Just make a single call to the web_search tool and use the result provided by the tool to answer the user's question."""
+
+
 
 LS_DESCRIPTION = """List all files in the virtual filesystem stored in agent state.
 

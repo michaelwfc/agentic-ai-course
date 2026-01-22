@@ -2,7 +2,7 @@
   "files.autoSave": "onFocusChange",
   // #值设置为true时，每次保存的时候自动格式化；
 
-  "python.defaultInterpreterPath": "C:\\Users\\michael\\.conda\\envs\\py311\\python.exe",
+  "python.defaultInterpreterPath": "C:\\Users\\michael\\.conda\\envs\\genai_env\\python.exe",
   "python.envFile": "${workspaceFolder}${pathSeparator}.vscode${pathSeparator}dev.env",
   "terminal.integrated.defaultProfile.windows": "Git Bash",
   "terminal.integrated.cwd": "${workspaceFolder}",
