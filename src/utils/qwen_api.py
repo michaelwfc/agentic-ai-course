@@ -1,55 +1,31 @@
+
+"""
+https://help.aliyun.com/zh/model-studio/models
+pip install langchain-community dashscope
+
+"""
 import os
-import os
+import time
 from pathlib import Path
 from openai import OpenAI
-import time
+from pydantic import BaseModel
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_community.chat_models import ChatTongyi
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from langchain.chat_models import init_chat_model
+from utils.openai_apis import call_openai_client_parse,call_openai_client_create,call_openai_client
+from utils.env_utils import load_env, get_env
 
-from env_utils import load_env, get_env
 
-
-load_env()
-
-dashscope_api_key = get_env("DASHSCOPE_API_KEY")
-dashscope_base_url= "https://dashscope.aliyuncs.com/compatible-mode/v1" 
 ENDPOINT =  '/v1/chat/completions'
 
 QWEN3_MAX = "qwen3-max"
 QWEN_PLUS = "qwen-plus"
 QWEN_FLASH = "qwen-flash"
 
-# 初始化客户端
-qwen_client = OpenAI(
-    # 若没有配置环境变量,可用阿里云百炼API Key将下行替换为：api_key="sk-xxx",但不建议在生产环境中直接将API Key硬编码到代码中,以减少API Key泄露风险.
-    # 新加坡和北京地域的API Key不同。获取API Key：https://help.aliyun.com/zh/model-studio/get-api-key
-    api_key= dashscope_api_key,
-    # 以下是北京地域base-url，如果使用新加坡地域的模型，需要将base_url替换为：https://dashscope-intl.aliyuncs.com/compatible-mode/v1
-    base_url= dashscope_base_url # 阿里云百炼服务的base_url
-)
 
-
-
-
-def run_demo():
-  try:
-
-      completion = qwen_client.chat.completions.create(
-          model= QWEN_FLASH,  # 模型列表：https://help.aliyun.com/zh/model-studio/getting-started/models
-          messages=[
-              {'role': 'system', 'content': 'You are a helpful assistant.'},
-              {'role': 'user', 'content': '你是谁？'}
-              ]
-      )
-      print(completion.choices[0].message.content)
-      # 我是通义千问，阿里巴巴集团旗下的超大规模语言模型。我能够回答问题、创作文字，如写故事、公文、邮件、剧本等，还能进行逻辑推理、编程，甚至表达观点和玩游戏。我支持多种语言，包括中文、英文、德语、法语、西班牙语等。如果你有任何问题或需要帮助，欢迎随时告诉我！
-      # 我是通义千问（Qwen），阿里巴巴集团旗下的通义实验室自主研发的超大规模语言模型。我可以帮助你回答问题、创作文字，比如写故事、写公文、写邮件、写剧本、逻辑推理、编程等等，还能表达观点，玩游戏等。如果你有任何问题或需要帮助，欢迎随时告诉我！
-  except Exception as e:
-      print(f"错误信息：{e}")
-      print("请参考文档：https://help.aliyun.com/zh/model-studio/developer-reference/error-code")
-
-
-
-
-
+# qwen_client = init_qwen_with_openai()
 
 
 def upload_file(file_path):
@@ -143,10 +119,90 @@ def run_batch_job(input_file_path, output_file_path , error_file_path):
         print(f"参见错误码文档: https://help.aliyun.com/zh/model-studio/developer-reference/error-code")
 
 
+def init_qwen_with_openai(dashscope_base_url= "https://dashscope.aliyuncs.com/compatible-mode/v1" 
+                          ) -> OpenAI:
+    dashscope_api_key = get_env("DASHSCOPE_API_KEY")
+    
+    # 初始化客户端
+    qwen_client = OpenAI(
+        # 若没有配置环境变量,可用阿里云百炼API Key将下行替换为：api_key="sk-xxx",但不建议在生产环境中直接将API Key硬编码到代码中,以减少API Key泄露风险.
+        # 新加坡和北京地域的API Key不同。获取API Key：https://help.aliyun.com/zh/model-studio/get-api-key
+        api_key= dashscope_api_key,
+        # 以下是北京地域base-url，如果使用新加坡地域的模型，需要将base_url替换为：https://dashscope-intl.aliyuncs.com/compatible-mode/v1
+        base_url= dashscope_base_url # 阿里云百炼服务的base_url
+    )
+    return qwen_client
+
+
+def call_qwen_with_openai_client(prompt:str="who are you?",
+                                 response_format:BaseModel=None, 
+                                 model_name= QWEN_PLUS,temperature= 0):
+  """
+  请参考文档：https://help.aliyun.com/zh/model-studio/developer-reference/error-code
+  # 我是通义千问，阿里巴巴集团旗下的超大规模语言模型。我能够回答问题、创作文字，如写故事、公文、邮件、剧本等，还能进行逻辑推理、编程，甚至表达观点和玩游戏。我支持多种语言，包括中文、英文、德语、法语、西班牙语等。如果你有任何问题或需要帮助，欢迎随时告诉我！
+  # 我是通义千问（Qwen），阿里巴巴集团旗下的通义实验室自主研发的超大规模语言模型。我可以帮助你回答问题、创作文字，比如写故事、写公文、写邮件、写剧本、逻辑推理、编程等等，还能表达观点，玩游戏等。如果你有任何问题或需要帮助，欢迎随时告诉我！
+  """
+  try:
+      client = init_qwen_with_openai()
+      response_content = call_openai_client(client=client, prompt=prompt,response_format=response_format,model_name=model_name,temperature=temperature)
+      return response_content
+
+  except Exception as e:
+      print(f"error: {e}")
+      raise e
+
+
+def init_qwen_with_langchain( model_name="qwen-plus", temperature=0,top_p=0.8, max_tokens=2000):
+    """https://docs.langchain.com/docs/integrations/llms/qwen
+    """
+    # Initialize the Qwen-Plus model
+    chat_model = ChatTongyi(
+        model_name= model_name,  # Specify Qwen-Plus model
+        temperature=temperature,
+        top_p=top_p,
+        max_tokens=max_tokens
+    )
+    return chat_model
+
+def run_qwen_model_invoke():
+    """https://docs.langchain.com/oss/python/integrations/chat/tongyi
+    """
+    # Initialize the Qwen-Plus model
+    chat_model = init_qwen_with_langchain()
+
+    # Create messages
+    messages = [
+        SystemMessage(content="You are a helpful assistant."),
+        HumanMessage(content="Hello, how are you?")
+    ]
+
+    # Get response
+    response = chat_model.invoke(messages)
+    print(response.content)
+
+  
+def run_qwen_model_chain():
+    # Initialize the model
+    llm = init_qwen_with_langchain()
+
+    # Create a prompt template
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "You are a helpful assistant that answers questions concisely."),
+        ("user", "{question}")
+    ])
+
+    # Create a chain
+    chain = prompt | llm | StrOutputParser()
+
+    # Use the chain
+    result = chain.invoke({"question": "What are the benefits of using Qwen-Plus?"})
+    print(result)
+
     
 if __name__ == "__main__":
-  run_demo()
-  # input_file_path =  os.path.join("tasks", "batch_generate_job.jsonl")
-  # output_file_path = os.path.join("tasks", "result.jsonl")
-  # error_file_path = os.path.join("tasks", "error.jsonl")
-  # run_batch_job(input_file_path, output_file_path, error_file_path)
+  load_env()
+
+  
+  response = call_qwen_with_openai_client()
+  print(response)
+  # run_qwen_model_chain()

@@ -1,15 +1,24 @@
+openai
+anthropic
+langgraph
+langchain
+langchain-core
+langchain-community 
+langgraph-checkpoint
+langsmith
+llamaindex
+dashscope
+# SQLite via SQLAlchemy
+SQLAlchemy
+tavily-python
+pydantic[email]
+wikipedia
 fastapi
 uvicorn[standard]
 pandas
-sqlalchemy
 psycopg2-binary
 python-dotenv
 jinja2
-openai
-anthropic
-
-tavily-python
-wikipedia
 requests
 aisuite
 docstring_parser
@@ -21,5 +30,14 @@ pymupdf           # optional but recommended for faster/better PDF text extracti
 # Web/knowledge tools you used in other snippets (optional)
 python-dotenv
 
-# SQLite via SQLAlchemy
-SQLAlchemy
+
+# --extra-index-url https://www.paddlepaddle.org.cn/packages/stable/cpu/
+# paddlepaddle==3.0.0
+# paddleocr
+
+
+
+# aws
+# boto3
+# bedrock-agentcore
+# strands-agents
