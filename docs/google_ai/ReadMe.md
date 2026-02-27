@@ -45,33 +45,33 @@ Now powered by Antigravity, build full-stack apps with multiplayer support, poli
 
 
 # 2. Vertex AI Introduction
-
-
-- [生成式 AI](https://docs.cloud.google.com/docs/generative-ai?hl=zh-cn)
+- [vertex-ai-platform](https://cloud.google.com/vertex-ai?hl=en)
 - [Vertex AI documentation](https://docs.cloud.google.com/vertex-ai/docs?hl=en)
+- [生成式 AI](https://docs.cloud.google.com/docs/generative-ai?hl=zh-cn)
 
-### 2.1  Key capabilities of Vertex AI
+
+Vertex AI is a fully-managed, unified AI development platform for building and using generative AI. Access and utilize Vertex AI Studio, Agent Builder, and 200+ foundation models.
+
+## 2.1  Key capabilities of Vertex AI
+
 - [Key capabilities of Vertex AI](https://docs.cloud.google.com/vertex-ai/docs/start/introduction-unified-platform?hl=en)
 
-
-
-### 2.2  Vertex AI Interface
+## 2.2 Vertex AI Interface
 
 - [Vertex AI Interface](https://docs.cloud.google.com/vertex-ai/docs/start/introduction-interfaces?hl=en)
 - [Development tools overview](https://docs.cloud.google.com/vertex-ai/docs/general/developer-tools-overview?hl=en)
 
 
-### 2.3 Vertex AI- Generative Develop Tools
+## 2.3 Vertex AI- Generative Develop Tools
 
-#### Google AI Studio
+### Google AI Studio
 - [Migrate from Google AI Studio to Vertex AI](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/migrate/migrate-google-ai?hl=en)
 
 - [Google AI Studio Playground](https://aistudio.google.com/prompts/new_chat)
 ![image](../../images/google_ai/google_ai_studio_playground.png)
 
 
-
-#### Vertex AI Studio & console
+### Vertex AI Studio & console
 - [Vertex AI Dashboard](https://console.cloud.google.com/vertex-ai/dashboard?hl=en&project=vertex-ai-test-488403)
 
 - [Vertex AI Studio](https://cloud.google.com/generative-ai-studio?hl=en)
@@ -83,29 +83,37 @@ Now powered by Antigravity, build full-stack apps with multiplayer support, poli
 ![image](../../images/google_ai/generative-ai-workflow.png)
 
 
-
-
-
-#### Vertex AI Agent Builder
+# 3. Vertex AI Agent Builder
 - [Vertex AI Agent Builder](https://cloud.google.com/products/agent-builder?hl=en)
-- [Vertex AI Agent Engine](https://docs.cloud.google.com/agent-builder/agent-engine/overview?hl=en)
+- [Vertex AI Agent Builder documentation](https://docs.cloud.google.com/agent-builder/overview?hl=en)
 
 
-Vertex AI Agent Builder
+
+![Vertex AI Agent Builder](https://docs.cloud.google.com/static/agent-builder/images/agent-builder-overview.png)
 This is the high-level orchestration suite. It includes the Agent Designer, a low-code visual environment for rapid prototyping, and the Agent Garden, a repository of pre-built templates and specialized agents (like customer service or data analysts) that can be deployed instantly.
 
+## Build
 
-- Agent Development Kit (ADK)
+### Agent Development Kit (ADK)
+- [Agent Development Kit (ADK) documents](https://google.github.io/adk-docs/)
+Agent Development Kit (ADK) is an open-source framework that simplifies the process of building sophisticated multi-agent systems while maintaining precise control over agent behavior.
 
-- The Connectivity Layer: Tooling & MCP
+### Agent Garden (Supported in preview)
+a library in the Google Cloud console where you can find and explore sample agents and tools that are designed to accelerate your development. In the Agent Garden, you can find the following:
 
-- Deployment & Operations: Agent Engine
-Once an agent is built, it needs a home. Agent Engine is the fully managed runtime designed to scale these agents from a laptop to millions of users without managing servers.
+### Agent Designer (Preview)
+a low-code visual designer that lets you design and test your agent. Experiment with your agent in Agent Designer before transitioning development to code using Agent Development Kit.
 
-- Evaluation
+#### Tooling & MCP ：The Connectivity Layer:
+
+## Scale
+### Agent Engine： Deployment & MLOps
+- [Agent Engine documents](https://docs.cloud.google.com/agent-builder/agent-engine/overview?hl=en)
+![image](https://docs.cloud.google.com/static/agent-builder/agent-engine/images/agent-engine.png)
 
 
-- Monitoring & Observability
+Vertex AI Agent Engine is a set of services that enables developers to deploy, manage, and scale AI agents in production. Vertex AI Agent Engine offers services such as a fully-managed runtime, evaluation, Sessions, Memory Bank, and Code Execution. Understand agent behavior with Google Cloud Trace (supporting OpenTelemetry), Cloud Monitoring, and Cloud Logging.
+
 The Agent Engine Dashboard provides granular visibility:
   - Trace Visualization: View the "inner monologue" and tool-call sequence of an agent's reasoning.
 
@@ -113,9 +121,29 @@ The Agent Engine Dashboard provides granular visibility:
 
   - Threat Detection: Integration with Security Command Center to flag if an agent starts exhibiting "suspicious" behavior, like attempting to exfiltrate data.
 
+### Deployment
+- [Deploy an agent](https://google.github.io/adk-docs/deploy/)
+![image](https://google.github.io/adk-docs/assets/deploy-agent.png)
+
+### Evaluation
+- [evaluation-overview](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/models/evaluation-overview?hl=en)
+
+### Observability: 
+- Cloud Logging： logging
+- Google Cloud Trace: Trace
+- Cloud Monitoring： Monitoring 
 
 
-- Governance & Identity
+## Governance
+Monitor what your agents are doing with an audit trail for end-to-end observability.
+
+### Agent Engine Threat Detection (Preview)：Detect threats with Security Command Center: 
+a built-in service of Security Command Center that helps you detect and investigate potential attacks on agents that are deployed to Vertex AI Agent Engine Runtime.
+
+
+### Agent identity (Preview):
+ Use Identity Access Management (IAM) agent identity to provide security and access management features when using agents on Vertex AI Agent Engine Runtime.
+
 Agent Identities: Each agent now has its own Cloud IAM principal. This ensures "least-privilege" access—an agent can only access the specific buckets or APIs it needs to do its job.
 
   **Agent IAM** (Identity & Access Management): The framework must support unique service identities for agents. You shouldn't use a master "Admin" key; the agent should have "least-privilege" access to only the specific databases it needs.
@@ -123,7 +151,7 @@ Agent Identities: Each agent now has its own Cloud IAM principal. This ensures "
 
 
 
-# 3. Vertex AI Qucikstart
+# 4. Vertex AI Qucikstart
 - check the free trial on [vertex-ai](https://cloud.google.com/vertex-ai?hl=en)
 - [Generative AI beginner's guide](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/overview?hl=en)
 - [Vertex AI quickstart](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/start?hl=en)
