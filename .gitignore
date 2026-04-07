@@ -1,4 +1,7 @@
+.github/
 output/
+test_studio/
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

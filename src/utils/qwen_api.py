@@ -11,12 +11,16 @@ from openai import OpenAI
 from pydantic import BaseModel
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_community.chat_models import ChatTongyi
+from langchain_openai import ChatOpenAI
+
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain.chat_models import init_chat_model
 from utils.openai_apis import call_openai_client_parse,call_openai_client_create,call_openai_client
 from utils.env_utils import load_env, get_env
 
+
+DASHSCOPE_BASE_URL= "https://dashscope.aliyuncs.com/compatible-mode/v1" 
 
 ENDPOINT =  '/v1/chat/completions'
 
@@ -25,7 +29,6 @@ QWEN_PLUS = "qwen-plus"
 QWEN_FLASH = "qwen-flash"
 
 
-# qwen_client = init_qwen_with_openai()
 
 
 def upload_file(file_path):
@@ -119,7 +122,7 @@ def run_batch_job(input_file_path, output_file_path , error_file_path):
         print(f"参见错误码文档: https://help.aliyun.com/zh/model-studio/developer-reference/error-code")
 
 
-def init_qwen_with_openai(dashscope_base_url= "https://dashscope.aliyuncs.com/compatible-mode/v1" 
+def init_openai_client_with_qwen(dashscope_base_url= "https://dashscope.aliyuncs.com/compatible-mode/v1" 
                           ) -> OpenAI:
     dashscope_api_key = get_env("DASHSCOPE_API_KEY")
     
@@ -143,7 +146,7 @@ def call_qwen_with_openai_client(prompt:str="who are you?",
   # 我是通义千问（Qwen），阿里巴巴集团旗下的通义实验室自主研发的超大规模语言模型。我可以帮助你回答问题、创作文字，比如写故事、写公文、写邮件、写剧本、逻辑推理、编程等等，还能表达观点，玩游戏等。如果你有任何问题或需要帮助，欢迎随时告诉我！
   """
   try:
-      client = init_qwen_with_openai()
+      client = init_openai_client_with_qwen()
       response_content = call_openai_client(client=client, prompt=prompt,response_format=response_format,model_name=model_name,temperature=temperature)
       return response_content
 
@@ -152,7 +155,7 @@ def call_qwen_with_openai_client(prompt:str="who are you?",
       raise e
 
 
-def init_qwen_with_langchain( model_name="qwen-plus", temperature=0,top_p=0.8, max_tokens=2000):
+def init_langchain_chat_tongyi( model_name="qwen-plus", temperature=0,top_p=0.8, max_tokens=2000):
     """https://docs.langchain.com/docs/integrations/llms/qwen
     """
     # Initialize the Qwen-Plus model
@@ -164,11 +167,30 @@ def init_qwen_with_langchain( model_name="qwen-plus", temperature=0,top_p=0.8, m
     )
     return chat_model
 
-def run_qwen_model_invoke():
+def init_langchain_chat_openai(model_name="qwen-plus", temperature=0,top_p=0.8, max_tokens=2000):
+    """Initialize the OpenAI Chat model using LangChain's integration."""
+    
+    api_key = get_env("DASHSCOPE_API_KEY")
+    
+    chat_model = ChatOpenAI(
+        model_name="qwen-plus",
+        api_key=api_key,
+        base_url=DASHSCOPE_BASE_URL,
+        temperature=temperature,
+        top_p=top_p,
+        max_tokens=max_tokens
+    )
+    return chat_model
+  
+  
+def run_langchain_chat_model(use_chat_tongyi=False):
     """https://docs.langchain.com/oss/python/integrations/chat/tongyi
     """
-    # Initialize the Qwen-Plus model
-    chat_model = init_qwen_with_langchain()
+    if use_chat_tongyi:
+      # Initialize the Qwen-Plus model
+      chat_model = init_langchain_chat_tongyi()
+    else:
+      chat_model = init_langchain_chat_openai()
 
     # Create messages
     messages = [
@@ -183,7 +205,7 @@ def run_qwen_model_invoke():
   
 def run_qwen_model_chain():
     # Initialize the model
-    llm = init_qwen_with_langchain()
+    llm = init_langchain_chat_tongyi()
 
     # Create a prompt template
     prompt = ChatPromptTemplate.from_messages([
@@ -198,11 +220,14 @@ def run_qwen_model_chain():
     result = chain.invoke({"question": "What are the benefits of using Qwen-Plus?"})
     print(result)
 
-    
+
+
 if __name__ == "__main__":
   load_env()
 
-  
   response = call_qwen_with_openai_client()
   print(response)
+  
+  run_langchain_chat_model(use_chat_tongyi=False)
+  
   # run_qwen_model_chain()

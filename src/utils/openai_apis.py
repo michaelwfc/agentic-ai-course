@@ -2,17 +2,18 @@ from  openai import OpenAI
 from pydantic import BaseModel
 # from utils.retry import CustomerQuery
 
-def call_openai_client_create(client:OpenAI, prompt:str, model="gpt-4o"):
+def call_openai_client_create(client:OpenAI, prompt:str, model="gpt-4o",temperature=0):
     # client = OpenAI()
     response = client.chat.completions.create(
-        # model=model,
-        messages=[{"role": "user", "content": prompt}]
+        model=model,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=temperature,
     )
     response_content =  response.choices[0].message.content
     return response_content
 
 
-def call_openai_client_parse(client:OpenAI, prompt:str,response_format:BaseModel,  model="gpt-4o"):
+def call_openai_client_parse(client:OpenAI, prompt:str,response_format:BaseModel,  model="gpt-4o",temperature=0):
     # Initialize OpenAI client and call passing CustomerQuery in your API call
     # openai_client = OpenAI()
     response = client.chat.completions.parse(
