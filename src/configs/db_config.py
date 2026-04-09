@@ -1,0 +1,1 @@
+DB_PATH = "data/state_db/chat_history.db"

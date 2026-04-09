@@ -167,7 +167,7 @@ def init_langchain_chat_tongyi( model_name="qwen-plus", temperature=0,top_p=0.8,
     )
     return chat_model
 
-def init_langchain_chat_openai(model_name="qwen-plus", temperature=0,top_p=0.8, max_tokens=2000):
+def init_langchain_chat_openai(model_name="qwen-plus", temperature=0,top_p=0.8, max_tokens=2000)-> ChatOpenAI:
     """Initialize the OpenAI Chat model using LangChain's integration."""
     
     api_key = get_env("DASHSCOPE_API_KEY")

@@ -14,7 +14,7 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "env": {
-                "PYTHONPATH": "${workspaceFolder}${pathSeparator}src"
+                "PYTHONPATH": "${workspaceFolder}${pathSeparator}src;${workspaceFolder}${pathSeparator}tutorials"
             }
         },
         // {

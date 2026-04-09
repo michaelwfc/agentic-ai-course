@@ -7,7 +7,7 @@ from typing_extensions import TypedDict
 from IPython.display import Image, display
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.state import CompiledStateGraph
-from langgraph.prebuilt import ToolNode,tools_condition
+from langgraph.prebuilt import ToolNode, tools_condition
 
 from langchain_core.messages import (
     SystemMessage,
@@ -17,6 +17,9 @@ from langchain_core.messages import (
     AnyMessage,
 )
 from langgraph.graph.message import add_messages, MessagesState
+from langgraph.checkpoint.memory import MemorySaver
+
+
 from utils.env_utils import load_env
 from utils.qwen_api import init_langchain_chat_openai
 from utils.langchain_utils import save_graph_image, save_graph_as_markdown
@@ -186,6 +189,7 @@ def multiply(a: int, b: int) -> int:
     """
     return a * b
 
+
 # This will be a tool
 def add(a: int, b: int) -> int:
     """Adds a and b.
@@ -196,6 +200,7 @@ def add(a: int, b: int) -> int:
     """
     return a + b
 
+
 def divide(a: int, b: int) -> float:
     """Divide a and b.
 
@@ -204,9 +209,9 @@ def divide(a: int, b: int) -> float:
         b: second int
     """
     return a / b
-  
 
-def run_chat_model():
+
+def run_llm_with_tools():
     messages = [
         AIMessage(
             content=f"So you said you were researching ocean mammals?", name="Model"
@@ -240,7 +245,7 @@ def run_chat_model():
     print(tool_call.tool_calls)
 
 
-def run_chat_model_stream():
+def run_llm_with_tools_stream():
     llm = init_langchain_chat_openai()
     llm_with_tools = llm.bind_tools([multiply])
 
@@ -342,8 +347,6 @@ def should_continue(state: ExtendedMessagesState) -> Literal["execute_tools", EN
         return END
 
 
-
-
 # define node for llm with tools
 def tool_calling_llm(state: ExtendedMessagesState) -> Dict[str, AnyMessage]:
     messages = state["messages"]
@@ -353,6 +356,7 @@ def tool_calling_llm(state: ExtendedMessagesState) -> Dict[str, AnyMessage]:
         "messages": result,
         "tool_loop_count": state.get("tool_loop_count", 0) + 1,
     }  # Pass loop_count through state
+
 
 def build_graph_with_tool_calling_v1(save_graph: bool = False) -> CompiledStateGraph:
 
@@ -377,26 +381,25 @@ def build_graph_with_tool_calling_v1(save_graph: bool = False) -> CompiledStateG
 
 
 def build_graph_with_tool_calling_v2(save_graph: bool = False) -> CompiledStateGraph:
-  """This version simplifies the graph by using a ToolNode, which automatically handles tool calls and execution. The conditional edge now only checks for the presence of tool calls to determine whether to route to the ToolNode or end the graph."""
+    """This version simplifies the graph by using a ToolNode, which automatically handles tool calls and execution. The conditional edge now only checks for the presence of tool calls to determine whether to route to the ToolNode or end the graph."""
 
-  builder = StateGraph(ExtendedMessagesState)
-  builder.add_node("tool_calling_llm", tool_calling_llm)
-  builder.add_edge(START, "tool_calling_llm")
-  
-  # add ToolNode for automatic tool execution
-  builder.add_node("tools", ToolNode([multiply]))
-  # If the latest message (result) from assistant is a tool call -> tools_condition routes to tools
-  # If the latest message (result) from assistant is a not a tool call -> tools_condition routes to END
-  builder.add_conditional_edges("tool_calling_llm", tools_condition)
-  
-  builder.add_edge("tools", "tool_calling_llm")  # Loop back to LLM after tool execution
-  graph = builder.compile()
-  if save_graph:
-    save_graph_image(graph, filename="graph_with_tool_calling_v2.png")
-  return graph
-  
+    builder = StateGraph(ExtendedMessagesState)
+    builder.add_node("tool_calling_llm", tool_calling_llm)
+    builder.add_edge(START, "tool_calling_llm")
 
+    # add ToolNode for automatic tool execution
+    builder.add_node("tools", ToolNode([multiply]))
+    # If the latest message (result) from assistant is a tool call -> tools_condition routes to tools
+    # If the latest message (result) from assistant is a not a tool call -> tools_condition routes to END
+    builder.add_conditional_edges("tool_calling_llm", tools_condition)
 
+    builder.add_edge(
+        "tools", "tool_calling_llm"
+    )  # Loop back to LLM after tool execution
+    graph = builder.compile()
+    if save_graph:
+        save_graph_image(graph, filename="graph_with_tool_calling_v2.png")
+    return graph
 
 
 def run_graph_with_tool_calling(version: int = 1, save_graph: bool = False):
@@ -406,7 +409,6 @@ def run_graph_with_tool_calling(version: int = 1, save_graph: bool = False):
         graph = build_graph_with_tool_calling_v1()
     elif version == 2:
         graph = build_graph_with_tool_calling_v2(save_graph=save_graph)
-        
 
     messages = graph.invoke(
         {
@@ -445,21 +447,25 @@ def run_graph_with_tool_calling_stream():
             last_msg.pretty_print()
 
 
-
-
-def build_math_agent_graph(save_graph: bool = False) -> CompiledStateGraph:
+def build_math_agent_graph(
+    with_memory: bool = False, save_graph: bool = False, filename="math_agent_graph.png"
+) -> CompiledStateGraph:
     llm = init_langchain_chat_openai()
     tools = [multiply, add, divide]
     llm_with_tools = llm.bind_tools(tools, parallel_tool_calls=False)
-    
+
     # System message
-    sys_msg = SystemMessage(content="You are a helpful assistant tasked with performing arithmetic on a set of inputs.")
+    sys_msg = SystemMessage(
+        content="You are a helpful assistant tasked with performing arithmetic on a set of inputs."
+    )
+
     # Node
     def assistant(state: MessagesState):
-      return {"messages": [llm_with_tools.invoke([sys_msg] + state["messages"])]}
-    
-    
-    
+        input_messages =  state["messages"]
+        messages_with_sys = [sys_msg] + input_messages
+        message = llm_with_tools.invoke(messages_with_sys)
+        return {"messages": [message  ]}
+
     builder = StateGraph(ExtendedMessagesState)
     # rename tool_calling_llm to agent for clarity in this context
     builder.add_node("agent", assistant)
@@ -468,17 +474,21 @@ def build_math_agent_graph(save_graph: bool = False) -> CompiledStateGraph:
     # add ToolNode for automatic tool execution
     builder.add_node("tools", ToolNode(tools))
     builder.add_conditional_edges("agent", tools_condition)
-    
+
     builder.add_edge("tools", "agent")  # Loop back to LLM after tool execution
-    graph = builder.compile()
+    if with_memory:
+        memory = MemorySaver()
+    else:
+        memory = None    
+    graph = builder.compile(checkpointer=memory)
     if save_graph:
-        save_graph_image(graph, filename="math_agent_graph.png")
+        save_graph_image(graph, filename=filename)
     return graph
-  
+
 
 def run_math_agent_graph(save_graph: bool = False):
-    question = QUESTION_04
-    graph = build_math_agent_graph(save_graph=save_graph)
+    question = QUESTION_05
+    graph = build_math_agent_graph(with_memory=False, save_graph=save_graph)
     messages = [HumanMessage(content=question, name="Lance")]
     messages = graph.invoke(
         {
@@ -486,12 +496,64 @@ def run_math_agent_graph(save_graph: bool = False):
             "tool_loop_count": 0,
         }  # Initialize here to ensure it's in the state``
     )
-  
+
     for m in messages["messages"]:
-        m.pretty_print()  
-    
-  
-  
+        m.pretty_print()
+
+    Followup_question = "Multiply that by 2."
+
+    # Optional 1:  No history messages passed to agent with No memory
+
+    # messages = [HumanMessage(content=Followup_question, name="Lance")]
+    # messages = graph.invoke(
+    #     {
+    #         "messages": messages,
+    #         "tool_loop_count": 0,
+    #     }  # Initialize here to ensure it's in the state``
+    # )
+
+    # Optional 2: history messages passed to agent with No memory
+    # messages.get("messages", []).append(
+    #     HumanMessage(content=Followup_question, name="Lance")
+    # )
+    # messages = messages + [HumanMessage(content=Followup_question, name="Lance")]
+    # messages = graph.invoke(messages)
+
+    # for m in messages["messages"]:
+    #     m.pretty_print()
+
+
+def run_math_agent_graph_with_memory():
+    # OPTIONAL 3: memory used to recall prior conversation without needing to pass messages in the state
+    graph = build_math_agent_graph(with_memory=True, save_graph=True,filename="math_agent_graph_with_memory.png")
+    question = QUESTION_05
+
+    config = {"configurable": {"thread_id": "t001"}}
+    messages = [HumanMessage(content=question, name="Lance")]
+    messages = graph.invoke(
+        {
+            "messages": messages,
+            "tool_loop_count": 0,
+        },
+        config=config,
+    )
+
+    for m in messages["messages"]:
+        m.pretty_print()
+
+    Followup_question = "Multiply that by 2."
+
+    messages = [HumanMessage(content=Followup_question, name="Lance")]
+    messages = graph.invoke(
+        {
+            "messages": messages,
+            "tool_loop_count": 0,
+        }  ,config=config
+    )
+    for m in messages["messages"]:
+        m.pretty_print()
+
+
 if __name__ == "__main__":
     load_env()
 
@@ -499,22 +561,22 @@ if __name__ == "__main__":
     QUESTION_02 = f"Hello, how are you?"
     QUESTION_03 = "What is too multiplied by 3"
     QUESTION_04 = "What is 2 multiplied by 3, then add 4, then divide by 2?"
+    QUESTION_05 = "Add 3 and 4."
 
     # llm = init_langchain_chat_openai()
     # llm_with_tools = llm.bind_tools([multiply])
     # print("Graph built successfully!")
     # run_simple_graph()
 
-    # run_chat_model()
-    # run_chat_model_stream()
+    # run_llm_with_tools()
+    # run_llm_with_tools_stream()
 
     # run_add_messages()
 
     # run_graph_with_tool_calling(version=2, save_graph=True)
 
     # run_graph_with_tool_calling_stream()
+
+    # run_math_agent_graph(save_graph=True)
     
-    run_math_agent_graph(save_graph=True)
-    
-    
-    
+    run_math_agent_graph_with_memory()

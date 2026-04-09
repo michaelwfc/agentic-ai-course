@@ -5,6 +5,7 @@ langchain
 langchain-core
 langchain-community 
 langgraph-checkpoint
+langgraph-checkpoint-sqlite 
 langsmith
 llamaindex
 langchain-openai
