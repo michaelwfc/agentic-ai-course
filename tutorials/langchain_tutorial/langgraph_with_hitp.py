@@ -1,3 +1,19 @@
+"""
+Goals
+Now, let's talk about the motivations for human-in-the-loop:
+(1) Approval - We can interrupt our agent, surface state to a user, and allow the user to accept an action
+(2) Debugging - We can rewind the graph to reproduce or avoid issues
+(3) Editing - You can modify the state
+
+LangGraph offers several ways to get or update agent state to support various human-in-the-loop workflows.
+
+First, we'll introduce breakpoints, which provide a simple way to stop the graph at specific steps.
+We'll show how this enables user approval.
+- https://docs.langchain.com/oss/python/langgraph/interrupts#debugging-with-interrupts
+
+"""
+
+
 from langchain_core.messages import (
     SystemMessage,
     AIMessage,
